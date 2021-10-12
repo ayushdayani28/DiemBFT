@@ -1,5 +1,5 @@
 import voteinfo as VoteInfo
-from diembft.ledger.ledgerCommitInfo import LedgerCommitInfo
+from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
 import qc as QC
 
 class VoteMsg:

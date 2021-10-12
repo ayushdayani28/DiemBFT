@@ -1,6 +1,7 @@
 import qc as QC
 
 class Block:
+
     def __init__(self):
         self.author = ''
         self.round = 0
