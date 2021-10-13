@@ -1,3 +1,0 @@
-class Safety:
-    def print_name():
-        print('In Safety')

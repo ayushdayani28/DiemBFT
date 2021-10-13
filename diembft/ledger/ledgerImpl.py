@@ -2,6 +2,7 @@ from diembft.utilities.fileHandler import FileHandler
 from ledger import Ledger
 from ledgerStore.ledgerStore import LedgerStore
 
+
 class LedgerImpl(Ledger):
 
     def __init__(self, ledger_store: LedgerStore):
