@@ -1,1 +1,0 @@
-GENESIS = "genesis_id"
