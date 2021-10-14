@@ -1,22 +1,25 @@
 from ..block_tree.block import Block
 from ..block_tree.qc import QC
 from ..ledger.ledger import Ledger
-from treelib import Tree
 from ..block_tree.voteMsg import VoteMsg
 from ..utilities.constants import F
+from ..utilities.idGenerator import IdGenerator
+from ..block_tree.blockId import BlockId
 
 
 class BlockTree:
     def __init__(self):
-        self.pending_block_tree = Tree()
+        self.pending_block_tree = list()
         self.pending_votes = {}
-        self.high_qc = None
-        self.high_commit_qc = None
+        self.high_qc: QC = None
+        self.high_commit_qc: QC = None
 
     def generate_block(self, transactions, current_round):
 
         # Create a BlockId object and hash it.
-        hash_id = "hash(author || round || payload || qc.vote.info.id || qc.signature"
+        block_id = BlockId('', current_round, transactions, self.high_qc)
+
+        hash_id = IdGenerator.get_id(block_id)
 
         return Block(self, current_round, transactions, self.high_qc, hash_id)
 
@@ -24,13 +27,13 @@ class BlockTree:
 
         Ledger.speculate(b.qc.id, b.payload)
 
-        self.pending_block_tree.add(b)
+        self.pending_block_tree.append(b)
 
     def process_vote(self, v: VoteMsg):
 
         self.process_qc(v.high_commit_qc)
 
-        vote_idx = hash(v.ledger_commit_info)
+        vote_idx = IdGenerator.get_id(v.ledger_commit_info)
 
         if vote_idx in self.pending_votes.keys():
             self.pending_votes[vote_idx].append(v.signature)
@@ -39,7 +42,7 @@ class BlockTree:
 
         if len(self.pending_votes[vote_idx]) == 2 * F + 1:
             # Create a QC
-            qc = QC()
+            qc = QC(vote_info=v.vote_info, ledger_commit_info=v.ledger_commit_info)
 
             return qc
 
@@ -48,12 +51,10 @@ class BlockTree:
     def process_qc(self, qc: QC):
 
         if qc.ledger_commit_info.commit_state_id is not None:
-
             Ledger.commit(qc.vote_info.parent_id)
-            # Something needs to be done here. Not sure what to prune
-            self.pending_block_tree.remove_node(qc.vote_info.parent_id)
 
-            # Max
-            self.high_commit_qc = qc.vote_info
+            self.pending_block_tree.pop(qc.vote_info.parent_id)
 
-        self.high_qc =
+            self.high_commit_qc = max(qc, self.high_commit_qc, key=lambda a, b: a.vote_info.round > b.vote_info.round)
+
+        self.high_qc = max(qc, self.high_qc, key=lambda a, b: a.vote_info.round > b.vote_info.round)

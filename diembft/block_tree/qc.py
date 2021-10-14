@@ -3,9 +3,9 @@ from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
 
 
 class QC:
-    def __init__(self, vote_info, ):
-        self.vote_info = VoteInfo()
-        self.ledger_commit_info = LedgerCommitInfo()
+    def __init__(self, vote_info: VoteInfo, ledger_commit_info: LedgerCommitInfo()):
+        self.vote_info = vote_info
+        self.ledger_commit_info = ledger_commit_info
         self.signatures = []
         self.author = ''
         self.author_signature = ''
