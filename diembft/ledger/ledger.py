@@ -1,3 +1,6 @@
+from ..block_tree.block import Block
+
+
 class Ledger:
 
     def __init__(self):
@@ -12,6 +15,5 @@ class Ledger:
     def commit(self, block_id):
         pass
 
-    def committed_block(self, block_id):
+    def committed_block(self, block_id) -> Block:
         pass
-

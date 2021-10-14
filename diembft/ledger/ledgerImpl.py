@@ -19,13 +19,12 @@ class LedgerImpl(Ledger):
     # Exports the branch to persistent layer
     # Discard speculate branches that fork from ancestors
     def commit(self, block_id):
-        self.ledger_store.show()
         self.write_ledger_to_file(block_id)
         self.ledger_store.prune(block_id)
-        self.ledger_store.show()
 
+    # Returns the committed block from the in cache tree
     def committed_block(self, block_id):
-        pass
+        self.ledger_store.find(block_id)
 
     def write_ledger_to_file(self, block_id):
         node = self.ledger_store.find(block_id)
