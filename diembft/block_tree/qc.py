@@ -3,7 +3,7 @@ from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
 
 
 class QC:
-    def __init__(self):
+    def __init__(self, vote_info, ):
         self.vote_info = VoteInfo()
         self.ledger_commit_info = LedgerCommitInfo()
         self.signatures = []
