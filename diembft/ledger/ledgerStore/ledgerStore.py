@@ -1,9 +1,12 @@
+from diembft.block_tree.block import Block
+
+
 class LedgerStore:
 
     def __init__(self):
         pass
 
-    def add(self, prev_block_id, block_id, transactions):
+    def add(self, block_id, exec_state_id, prev_block_id, block: Block):
         pass
 
     def delete(self, block_id):

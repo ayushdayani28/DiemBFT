@@ -7,5 +7,5 @@ class Block:
         self.author = author
         self.round = round
         self.payload = transactions
-        self.qc = high_qc
+        self.qc: QC = high_qc
         self.id = id

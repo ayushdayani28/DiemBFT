@@ -25,7 +25,7 @@ class BlockTree:
 
     def execute_and_insert(self, b: Block):
 
-        Ledger.speculate(b.qc.id, b.payload)
+        Ledger.speculate(b.qc.id, b.id, b)
 
         self.pending_block_tree.append(b)
 

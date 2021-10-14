@@ -32,10 +32,13 @@ class LeaderElection:
                 # TODO : We have to get all the nodes that signed the current_qc and hence have their signatures.
                 active_validators = active_validators.append(current_qc.signatures)
 
+            # Adding the latest Exclude_size of authors to the list
             if len(last_authors) < self.exclude_size:
                 last_authors = last_authors.append(block_author)
 
             current_qc = current_block.qc
+
+            i = i + 1
 
         # To convert the list to an ordered set of last_authors
         last_authors = list(dict.fromkeys(last_authors))
