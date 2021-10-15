@@ -3,15 +3,17 @@ from ..utilities.constants import WINDOW_SIZE, EXCLUDE_SIZE
 from diembft.certificates.qc import QC
 from ..ledger.ledger import Ledger
 from ..block_tree.block import Block
+from diembft.pacemaker.pacemaker import Pacemaker
 
 
 class LeaderElection:
 
-    def __init__(self, validators):
+    def __init__(self, validators, pace_maker: Pacemaker):
         self.validators = validators  # All the nodes - the node that is proposing the message
         self.window_size = WINDOW_SIZE
         self.exclude_size = EXCLUDE_SIZE
         self.reputation_leaders = {}
+        self.pace_maker = pace_maker
 
     def elect_reputation_leader(self, qc: QC):
         # Validators that signed the last window_size committed blocks
@@ -30,7 +32,7 @@ class LeaderElection:
 
             if i < self.window_size:
                 # TODO : We have to get all the nodes that signed the current_qc and hence have their signatures.
-                active_validators = active_validators.append(current_qc.signatures)
+                active_validators = active_validators.append(self.get_signature_signer(current_qc.signatures))
 
             # Adding the latest Exclude_size of authors to the list
             if len(last_authors) < self.exclude_size:
@@ -49,17 +51,25 @@ class LeaderElection:
         # To generate pseudo random numbers based on the round number
         random.seed(qc.vote_info.round)
 
-        return active_validators[random.randint(0, len(active_validators)-1)]
+        return active_validators[random.randint(0, len(active_validators) - 1)]
+
+    @staticmethod
+    def get_signature_signer(signatures: list):
+        signers = []
+        for signature in signatures:
+            signers.append(signature.node_id)
+
+        return signers
 
     def update_leaders(self, qc: QC):
         extended_round = qc.vote_info.parent_round
         qc_round = qc.vote_info.round
-        current_round = PaceMaker().current_round
+        current_round = self.pace_maker.current_round
         if extended_round + 1 == qc_round and qc_round + 1 == current_round:
             self.reputation_leaders[current_round + 1] = self.elect_reputation_leader(qc)
 
     def get_leader(self, round):
-        #
+
         if round in self.reputation_leaders.keys():
             return self.reputation_leaders[round]
         index = (round / 2) % len(self.validators)
