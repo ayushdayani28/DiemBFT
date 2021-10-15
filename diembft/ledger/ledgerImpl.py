@@ -2,7 +2,7 @@ from diembft.utilities.fileHandler import FileHandler
 from ledger import Ledger
 from ledgerStore.ledgerStore import LedgerStore
 from ..block_tree.block import Block
-from ..utilities.idGenerator import IdGenerator
+from ..utilities.verifier import Verifier
 
 
 class StateId:
@@ -21,7 +21,7 @@ class LedgerImpl(Ledger):
     def speculate(self, prev_block_id, block_id, block: Block):
         prev_state_id = self.pending_state(prev_block_id)
         # Generate the hash for prev_state_id || transactions to cover the history of the ledger
-        exec_state_id = IdGenerator.get_id(StateId(prev_state_id, block.payload))
+        exec_state_id = Verifier.encode(StateId(prev_state_id, block.payload))
         return self.ledger_store.add(block_id=block_id, exec_state_id=exec_state_id, prev_block_id=prev_block_id,
                                      block=block).tag
 

@@ -1,16 +1,26 @@
 from ..pacemaker.timeOutCertficate import TimeOutCertificate
 from ..block_tree.qc import QC
 from ..ledger.ledgerImpl import LedgerImpl
+from ..block_tree.block import Block
+from diembft.utilities.verifier import Verifier
+from diembft.block_tree.voteinfo import VoteInfo
+from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
+from diembft.messages.voteMsg import VoteMsg
+from diembft.block_tree.blockTree import BlockTree
+from diembft.pacemaker.timeoutInfo import TimeOutInfo
 
 
 class Safety:
 
-    def __init__(self):
+    def __init__(self, block_tree: BlockTree, node_id, mapper: dict):
         self.private_key = ''
         self.public_keys = []
         self.highest_vote_round = 0
         self.highest_qc_round = 0
         self.ledger = LedgerImpl()
+        self.verifier = Verifier(mapper)
+        self.block_tree = block_tree
+        self.node_id = node_id
 
     def increase_highest_vote_round(self, round):
         self.highest_vote_round = max(self.highest_vote_round, round)
@@ -40,3 +50,56 @@ class Safety:
         if Safety.check_consecutive(block_round, qc.vote_info.round):
             return self.ledger.pending_state(qc.id)
         return None
+
+    def valid_signatures(self, b:Block, tc: TimeOutCertificate):
+        signatures = b.qc.signatures
+        for node_id,message in signatures:
+            if not self.verifier.verify(node_id,message):
+                return False
+
+        for node_id, message in tc.tmo_signatures:
+            if not self.verifier.verify(node_id, message):
+                return False
+
+        return True
+
+    # public methods
+    def make_vote(self, b: Block, last_tc: TimeOutCertificate):
+        qc_round = b.qc.vote_info.round
+        if self.valid_signatures(b,last_tc) and self.safe_to_vote(b.round,qc_round,last_tc):
+            self.update_highest_qc_round(qc_round)
+            self.increase_highest_vote_round(b.round)
+            vote_info = VoteInfo(
+                b.id,
+                b.round,
+                b.qc.vote_info.id,
+                qc_round,
+                self.ledger.pending_state(b.id)
+            )
+            # TODO: Confirm hash logic
+            ledger_commit_info = LedgerCommitInfo(
+                self.commit_state_id(b.round, b.qc),
+                Verifier.encode(str(vote_info))
+            )
+            return VoteMsg(
+                vote_info,
+                ledger_commit_info,
+                self.block_tree.high_commit_qc,
+                self.node_id,
+                self.verifier.sign(str(ledger_commit_info))
+            )
+        return None
+
+    def make_timeout(self, round: int, high_qc: QC, last_tc: TimeOutCertificate):
+        qc_round = high_qc.vote_info.round
+        if self.valid_signatures(high_qc, last_tc) and self.safe_to_timeout(round, qc_round, last_tc):
+            self.increase_highest_vote_round(round)
+            return TimeOutInfo(
+                round,
+                high_qc,
+                self.node_id,
+                self.verifier.sign(str(round) + str(high_qc.round))
+            )
+
+        return None
+

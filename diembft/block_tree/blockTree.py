@@ -1,9 +1,9 @@
 from ..block_tree.block import Block
 from ..block_tree.qc import QC
 from ..ledger.ledger import Ledger
-from ..block_tree.voteMsg import VoteMsg
+from diembft.messages.voteMsg import VoteMsg
 from ..utilities.constants import F
-from ..utilities.idGenerator import IdGenerator
+from ..utilities.verifier import Verifier
 from ..block_tree.blockId import BlockId
 
 
@@ -19,7 +19,7 @@ class BlockTree:
         # Create a BlockId object and hash it.
         block_id = BlockId('', current_round, transactions, self.high_qc)
 
-        hash_id = IdGenerator.get_id(block_id)
+        hash_id = Verifier.encode(block_id)
 
         return Block(self, current_round, transactions, self.high_qc, hash_id)
 
@@ -33,7 +33,7 @@ class BlockTree:
 
         self.process_qc(v.high_commit_qc)
 
-        vote_idx = IdGenerator.get_id(v.ledger_commit_info)
+        vote_idx = Verifier.encode(v.ledger_commit_info)
 
         if vote_idx in self.pending_votes.keys():
             self.pending_votes[vote_idx].append(v.signature)
