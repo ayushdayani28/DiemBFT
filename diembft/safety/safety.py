@@ -82,7 +82,6 @@ class Safety(Logger):
                 qc_round,
                 self.ledger.pending_state(b.id)
             )
-            # TODO: Confirm hash logic
             ledger_commit_info = LedgerCommitInfo(
                 self.commit_state_id(b.round, b.qc),
                 Verifier.encode(str(vote_info))
