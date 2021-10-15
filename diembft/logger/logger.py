@@ -9,6 +9,7 @@ class Logger:
                             format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
                             datefmt='%H:%M:%S',
                             level=logging.DEBUG)
+
         self.logger = logging.getLogger(__name__)
         self.node_id = node_id
 
