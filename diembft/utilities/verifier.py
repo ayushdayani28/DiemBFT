@@ -12,7 +12,6 @@ class Verifier:
         self.public_keys_map = dict()
         self.mapper = PublicKeyNodeMapper(mapper)
 
-
     @staticmethod
     def encode(message):
         message = bytes(message, 'utf-16')
@@ -31,10 +30,8 @@ class Verifier:
         return private_key.sign(message)
 
     def verify(self, node_id, message):
-
         if not node_id or not message:
             return True
-
         try:
             public_key = self.mapper.get_node_public_key(node_id)
             public_key.verify(message)

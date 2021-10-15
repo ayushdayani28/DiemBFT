@@ -4,6 +4,7 @@ from diembft.block_tree.blockTree import BlockTree
 from diembft.messages.timeOutMessage import TimeOutMessage
 import time
 from diembft.certificates.qc import QC
+from collections import defaultdict
 
 
 class Pacemaker:
@@ -11,13 +12,17 @@ class Pacemaker:
     def __init__(self, safety: Safety, block_tree: BlockTree, byzentine_nodes: int):
         self.current_round = 0
         self.last_round_tc = TimeOutCertificate()
-        self.pending_timeouts = 0
+        self.pending_timeouts = defaultdict(Pacemaker.default_function)
         self.timer_constant = 4
         self.current_time = round(time.time() * 1000)
         self.safety = safety
         self.block_tree = block_tree
         self.f = byzentine_nodes
         self.current_time = round(time.time() * 1000)
+
+    @staticmethod
+    def default_function():
+        return set()
 
     @staticmethod
     def get_round_timer(self):
@@ -58,7 +63,7 @@ class Pacemaker:
             )
         return None
 
-    def advance_round(self, tc:TimeOutCertificate):
+    def advance_round(self, tc: TimeOutCertificate):
         if tc is None or tc.round < self.current_round:
             return False
         self.last_round_tc = tc
