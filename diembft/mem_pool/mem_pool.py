@@ -1,4 +1,4 @@
-from ..utilities.nop import Nop
+from diembft.utilities.nop import Nop
 from message import Message
 
 """

@@ -1,4 +1,4 @@
-from ..block_tree.block import Block
+from diembft.block_tree.block import Block
 from diembft.certificates.timeOutCertficate import TimeOutCertificate
 from diembft.certificates.qc import QC
 

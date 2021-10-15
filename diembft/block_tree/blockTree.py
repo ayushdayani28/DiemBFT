@@ -1,10 +1,10 @@
-from ..block_tree.block import Block
+from diembft.block_tree.block import Block
 from diembft.certificates.qc import QC
-from ..ledger.ledger import Ledger
+from diembft.ledger.ledger import Ledger
 from diembft.messages.voteMsg import VoteMsg
-from ..utilities.constants import F
-from ..utilities.verifier import Verifier
-from ..block_tree.blockId import BlockId
+from diembft.utilities.constants import F
+from diembft.utilities.verifier import Verifier
+from diembft.block_tree.blockId import BlockId
 
 
 class BlockTree:

@@ -1,6 +1,6 @@
 from treelib import Tree
 from diembft.block_tree.block import Block
-from ..ledgerStore.ledgerStore import LedgerStore
+from diembft.ledgerStore.ledgerStore import LedgerStore
 from diembft.utilities.constants import GENESIS
 
 

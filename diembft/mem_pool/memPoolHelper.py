@@ -1,5 +1,5 @@
-from ..mem_pool.mem_pool import MemPool
-from ..mem_pool.message import Message
+from diembft.mem_pool.mem_pool import MemPool
+from diembft.mem_pool.message import Message
 
 
 class MemPoolHelper:

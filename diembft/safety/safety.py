@@ -2,8 +2,8 @@ import logging
 
 from diembft.certificates.timeOutCertficate import TimeOutCertificate
 from diembft.certificates.qc import QC
-from ..ledger.ledgerImpl import LedgerImpl
-from ..block_tree.block import Block
+from diembft.ledger.ledgerImpl import LedgerImpl
+from diembft.block_tree.block import Block
 from diembft.utilities.verifier import Verifier
 from diembft.block_tree.voteinfo import VoteInfo
 from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
