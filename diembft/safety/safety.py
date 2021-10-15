@@ -51,7 +51,7 @@ class Safety:
             return self.ledger.pending_state(qc.id)
         return None
 
-    def valid_signatures(self, b:Block, tc: TimeOutCertificate):
+    def valid_signatures(self, b: Block, tc: TimeOutCertificate):
         signatures = b.qc.signatures
         for node_id, message in signatures:
             if not self.verifier.verify(node_id, message):
