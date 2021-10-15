@@ -1,8 +1,8 @@
 import random
-from ..utilities.constants import WINDOW_SIZE, EXCLUDE_SIZE
+from diembft.utilities.constants import WINDOW_SIZE, EXCLUDE_SIZE
 from diembft.certificates.qc import QC
-from ..ledger.ledger import Ledger
-from ..block_tree.block import Block
+from diembft.ledger.ledger import Ledger
+from diembft.block_tree.block import Block
 from diembft.pacemaker.pacemaker import Pacemaker
 
 
@@ -31,7 +31,6 @@ class LeaderElection:
             block_author = current_block.author
 
             if i < self.window_size:
-                # TODO : We have to get all the nodes that signed the current_qc and hence have their signatures.
                 active_validators = active_validators.append(self.get_signature_signer(current_qc.signatures))
 
             # Adding the latest Exclude_size of authors to the list

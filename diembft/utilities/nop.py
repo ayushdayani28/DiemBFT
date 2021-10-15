@@ -1,4 +1,4 @@
-from ..mem_pool.message import Message
+from diembft.mem_pool.message import Message
 import uuid
 
 

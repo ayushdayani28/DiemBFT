@@ -1,7 +1,8 @@
 from diembft.block_tree.block import Block
+from diembft.logger.logger import Logger
 
 
-class LedgerStore:
+class LedgerStore(Logger):
 
     def __init__(self):
         pass

@@ -1,27 +1,23 @@
 from diembft.utilities.fileHandler import FileHandler
 from ledger import Ledger
 from ledgerStore.ledgerStore import LedgerStore
-from ..block_tree.block import Block
-from ..utilities.verifier import Verifier
-
-
-class StateId:
-    def __init__(self, prev_state_id, transactions):
-        self.prev_state_id = prev_state_id
-        self.transactions = transactions
+from diembft.block_tree.block import Block
+from diembft.utilities.verifier import Verifier
+from diembft.ledger.helper.stateId import StateId
 
 
 class LedgerImpl(Ledger):
 
-    def __init__(self):
+    def __init__(self, node_id):
         super().__init__()
         self.ledger_store = LedgerStore()
-        self.file = FileHandler()
+        self.file = FileHandler(node_id=node_id)
 
     def speculate(self, prev_block_id, block_id, block: Block):
         prev_state_id = self.pending_state(prev_block_id)
         # Generate the hash for prev_state_id || transactions to cover the history of the ledger
-        exec_state_id = Verifier.encode(StateId(prev_state_id, block.payload))
+        exec_state_id = Verifier.encode(str(StateId(prev_state_id, block.payload)))
+        self.log_info('Adding node with block_id: ' + str(block_id) + ',exec_state_id: ' + str(exec_state_id) + ' to ' + 'parent: ' + str(prev_block_id))
         return self.ledger_store.add(block_id=block_id, exec_state_id=exec_state_id, prev_block_id=prev_block_id,
                                      block=block).tag
 
@@ -30,7 +26,7 @@ class LedgerImpl(Ledger):
         try:
             return self.ledger_store.find(block_id).tag
         except AttributeError:
-            print("No pending state found")
+            self.log_info("No pending state found in the tree")
         return None
 
     # Exports the branch to persistent layer
