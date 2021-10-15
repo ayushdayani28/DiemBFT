@@ -1,13 +1,8 @@
-import sys
-sys.path.append( '/Users/akash/distributed-systems/DiemBFT')
-
-
 import nacl.hash
 import nacl.encoding
 from diembft.utilities.generateKeys import GenerateKeys
 from diembft.utilities.publicKeyToNodesMapper import PublicKeyNodeMapper
 hasher = nacl.hash.sha256
-
 
 
 class Verifier:
@@ -49,12 +44,4 @@ class Verifier:
             return False
 
 
-v = Verifier(dict())
 
-v1 = Verifier(dict())
-
-print(str(v1), str(v))
-
-v2 = v.sign(str(v1))
-
-print(type(v2))

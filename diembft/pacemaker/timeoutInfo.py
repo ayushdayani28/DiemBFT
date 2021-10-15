@@ -1,8 +1,8 @@
-from ..block_tree.qc import QC
+from diembft.certificates.qc import QC
 from nacl.signing import SignedMessage
 
 
-# TODO: Add Signature
+# TODO: Add signatureDiemBFT
 class TimeOutInfo:
 
     def __init__(self, round: int, high_qc: QC, sender: str, signature: SignedMessage):

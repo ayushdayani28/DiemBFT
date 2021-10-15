@@ -1,4 +1,4 @@
-from ..block_tree.qc import QC
+from diembft.certificates.qc import QC
 
 
 class BlockId:

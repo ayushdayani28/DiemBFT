@@ -1,5 +1,5 @@
-from ..pacemaker.timeOutCertficate import TimeOutCertificate
-from ..block_tree.qc import QC
+from diembft.certificates.timeOutCertficate import TimeOutCertificate
+from diembft.certificates.qc import QC
 from ..ledger.ledgerImpl import LedgerImpl
 from ..block_tree.block import Block
 from diembft.utilities.verifier import Verifier
@@ -53,8 +53,8 @@ class Safety:
 
     def valid_signatures(self, b:Block, tc: TimeOutCertificate):
         signatures = b.qc.signatures
-        for node_id,message in signatures:
-            if not self.verifier.verify(node_id,message):
+        for node_id, message in signatures:
+            if not self.verifier.verify(node_id, message):
                 return False
 
         for node_id, message in tc.tmo_signatures:
@@ -66,7 +66,7 @@ class Safety:
     # public methods
     def make_vote(self, b: Block, last_tc: TimeOutCertificate):
         qc_round = b.qc.vote_info.round
-        if self.valid_signatures(b,last_tc) and self.safe_to_vote(b.round,qc_round,last_tc):
+        if self.valid_signatures(b, last_tc) and self.safe_to_vote(b.round, qc_round, last_tc):
             self.update_highest_qc_round(qc_round)
             self.increase_highest_vote_round(b.round)
             vote_info = VoteInfo(

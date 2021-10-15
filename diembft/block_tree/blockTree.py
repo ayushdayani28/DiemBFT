@@ -1,5 +1,5 @@
 from ..block_tree.block import Block
-from ..block_tree.qc import QC
+from diembft.certificates.qc import QC
 from ..ledger.ledger import Ledger
 from diembft.messages.voteMsg import VoteMsg
 from ..utilities.constants import F

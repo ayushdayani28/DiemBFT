@@ -1,6 +1,6 @@
 from diembft.pacemaker.timeoutInfo import TimeOutInfo
-from diembft.pacemaker.timeOutCertficate import TimeOutCertificate
-from diembft.block_tree.qc import QC
+from diembft.certificates.timeOutCertficate import TimeOutCertificate
+from diembft.certificates.qc import QC
 
 
 class TimeOutMessage:

@@ -1,6 +1,6 @@
 import random
 from ..utilities.constants import WINDOW_SIZE, EXCLUDE_SIZE
-from ..block_tree.qc import QC
+from diembft.certificates.qc import QC
 from ..ledger.ledger import Ledger
 from ..block_tree.block import Block
 

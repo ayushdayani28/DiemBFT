@@ -1,9 +1,9 @@
-from diembft.pacemaker.timeOutCertficate import TimeOutCertificate
+from diembft.certificates.timeOutCertficate import TimeOutCertificate
 from diembft.safety.safety import Safety
 from diembft.block_tree.blockTree import BlockTree
 from diembft.messages.timeOutMessage import TimeOutMessage
 import time
-from diembft.block_tree.qc import QC
+from diembft.certificates.qc import QC
 
 
 class Pacemaker:

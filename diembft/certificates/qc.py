@@ -1,4 +1,4 @@
-import voteinfo as VoteInfo
+from diembft.block_tree.voteinfo import VoteInfo
 from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
 
 

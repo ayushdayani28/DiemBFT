@@ -1,6 +1,6 @@
 from ..block_tree.block import Block
-from ..pacemaker.timeOutCertficate import TimeOutCertificate
-from ..block_tree.qc import QC
+from diembft.certificates.timeOutCertficate import TimeOutCertificate
+from diembft.certificates.qc import QC
 
 
 class ProposalMsg:
