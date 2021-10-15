@@ -1,3 +1,5 @@
+import logging
+
 from diembft.certificates.timeOutCertficate import TimeOutCertificate
 from diembft.certificates.qc import QC
 from ..ledger.ledgerImpl import LedgerImpl
@@ -8,9 +10,10 @@ from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
 from diembft.messages.voteMsg import VoteMsg
 from diembft.block_tree.blockTree import BlockTree
 from diembft.pacemaker.timeoutInfo import TimeOutInfo
+from diembft.logger.logger import Logger
 
 
-class Safety:
+class Safety(Logger):
 
     def __init__(self, block_tree: BlockTree, node_id, mapper: dict):
         self.private_key = ''
@@ -55,12 +58,15 @@ class Safety:
         signatures = b.qc.signatures
         for node_id, message in signatures:
             if not self.verifier.verify(node_id, message):
+                self.log_debug('QC verification failed : for node_id: '+node_id+' and message: '+message)
                 return False
 
         for node_id, message in tc.tmo_signatures:
             if not self.verifier.verify(node_id, message):
+                self.log_debug('TC verification failed : for node_id: ' + node_id + ' and message: ' + message)
                 return False
 
+        self.log_info('Signatures are valid')
         return True
 
     # public methods

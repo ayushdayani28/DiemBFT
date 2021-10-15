@@ -1,3 +1,5 @@
+import logging
+
 import nacl.hash
 import nacl.encoding
 from diembft.utilities.generateKeys import GenerateKeys
