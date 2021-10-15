@@ -1,6 +1,6 @@
 from diembft.utilities.fileHandler import FileHandler
-from ledger import Ledger
-from ledgerStore.ledgerStore import LedgerStore
+from diembft.ledger.ledger import Ledger
+from diembft.ledger.ledgerStore.ledgerStoreImpl import LedgerStoreImpl
 from diembft.block_tree.block import Block
 from diembft.utilities.verifier import Verifier
 from diembft.ledger.helper.stateId import StateId
@@ -8,9 +8,9 @@ from diembft.ledger.helper.stateId import StateId
 
 class LedgerImpl(Ledger):
 
-    def __init__(self, node_id):
+    def __init__(self, node_id: str):
         super().__init__()
-        self.ledger_store = LedgerStore()
+        self.ledger_store = LedgerStoreImpl()
         self.file = FileHandler(node_id=node_id)
 
     def speculate(self, prev_block_id, block_id, block: Block):

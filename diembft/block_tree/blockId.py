@@ -10,4 +10,4 @@ class BlockId:
         self.signatures = qc.signatures
 
     def __repr__(self):
-        return self.author+str(self.round)+self.payload+ str(self.id)+str(self.signatures)
+        return self.author+str(self.round)+ ''.join(self.payload)+ str(self.id)+''.join(self.signatures)

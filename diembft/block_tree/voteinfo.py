@@ -1,3 +1,5 @@
+from diembft.utilities.verifier import Verifier
+
 
 class VoteInfo:
 

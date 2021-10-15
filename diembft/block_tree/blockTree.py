@@ -8,7 +8,7 @@ from diembft.block_tree.blockId import BlockId
 
 
 class BlockTree:
-    def __init__(self, node_id, ledger:LedgerImpl):
+    def __init__(self, node_id, ledger: LedgerImpl):
         self.pending_block_tree = list()
         self.pending_votes = {}
         self.high_qc: QC = None
@@ -27,7 +27,7 @@ class BlockTree:
 
     def execute_and_insert(self, b: Block):
 
-        self.ledger.speculate(b.qc.id, b.id, b)
+        self.ledger.speculate(b.qc.vote_info.id, b.id, b)
 
         self.pending_block_tree.append(b)
 

@@ -17,7 +17,7 @@ class Verifier:
     @staticmethod
     def encode(message):
         message = bytes(message, 'utf-16')
-        return hasher(message, encoder=nacl.encoding.HexEncoder)
+        return Verifier.decode(hasher(message, encoder=nacl.encoding.HexEncoder))
 
     @staticmethod
     def decode(message):
