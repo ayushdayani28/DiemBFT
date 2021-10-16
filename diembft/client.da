@@ -1,16 +1,34 @@
 from diembft.mem_pool.message import Message
+from diembft.block_tree.client_request import ClientRequest
+from diembft.messages.voteMsg import VoteMsg
 
 class Client(process):
-    def setup():
-        pass
+    def setup(node_id:str, replica_nodes:set, signature:list):
+        self.node_id = node_id
+        self.replica_nodes = replica_nodes
 
     def run():
-        pass
-    
-    def create_request() -> Message:
-        pass
+        message = create_requests()
+        send(('client_message', message), to=self.replica_nodes)
+
+
+    def create_request():
+        client_request  = ClientRequest(
+            self.node_id,
+            "66527576-2ec6-11ec-8d3d-0242ac130003"
+        )
+        return Message(
+            ["Add"],
+            'signature',
+            client_request
+        )
+
+    def receive(msg=('response_message', vote_msg), from_=replica_leader_node):
+        output(vote_msg.ledger_commit_info.client_request.client_id)
 
 
 def main():
-    pass
+    node = new(Client, num=1)
+    setup(node)
+    start
 

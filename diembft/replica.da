@@ -92,34 +92,6 @@ class Replica(process):
                 
                 send(msg=('message',proposal_msg), to=nodes)
 
-def get_node_key_formatter(id: int):
-
-    return 'node_id' + ' ' + str(id)
-
-def main():
-
-    nodes_count = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-
-    generate_keys = GenerateKeys()
-
-    config(channel='fifo', clock = "lamport")
-
-    replicas = new(Replica, num = nodes_count)
-
-    node_to_public_key_mapper, node_to_key_mapper = dict(), dict()
-
-    for i,r in enumerate(replicas):
-        private_key, public_key = generate_keys.generate_key()
-        node_to_public_key_mapper[get_node_key_formatter(i)] = public_key
-        node_to_key_mapper[get_node_key_formatter(i)] = [private_key, public_key]
-    
-    for i,r in enumerate(replicas):
-        
-        node_id = get_node_key_formatter(i)
-
-        setup(r, (replicas - {r}, node_id, node_to_public_key_mapper, node_to_key_mapper[node_id] ))
-    
-    start(replicas)
         
 
 

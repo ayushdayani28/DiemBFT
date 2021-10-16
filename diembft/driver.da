@@ -1,0 +1,50 @@
+from diembft.client import Client
+from diembft.replica import Replica
+from platform import node
+from socket import timeout
+import sys
+from _typeshed import Self
+from threading import Timer
+from time import time
+from diembft.mem_pool.memPoolHelper import MemPoolHelper
+from diembft import main as Main, messages
+from diembft.messages import voteMsg
+from diembft.pacemaker.pacemaker import Pacemaker
+from diembft.utilities.generateKeys import GenerateKeys
+from diembft.messages.proposalMsg import ProposalMsg
+from diembft.messages.timeOutMessage import TimeOutMessage
+from diembft.messages.voteMsg import VoteMsg
+
+def main():
+
+    nodes_count = int(sys.argv[1]) if len(sys.argv) > 1 else 3
+    client_count = int(sys.argv[2]) if len(sys.argv) > 1 else 1
+
+    generate_keys = GenerateKeys()
+
+    config(channel='fifo', clock = "lamport")
+
+    replicas = new(Replica, num = nodes_count)
+
+    node_to_public_key_mapper, node_to_key_mapper = dict(), dict()
+
+    client = new(Client, num=client_count)
+
+    setup(client, ())
+
+    for i,r in enumerate(replicas):
+        private_key, public_key = generate_keys.generate_key()
+        node_to_public_key_mapper[get_node_key_formatter(i)] = public_key
+        node_to_key_mapper[get_node_key_formatter(i)] = [private_key, public_key]
+
+    for i,r in enumerate(replicas):
+
+        node_id = get_node_key_formatter(i)
+
+        setup(r, (replicas - {r}, node_id, node_to_public_key_mapper, node_to_key_mapper[node_id] ))
+
+    start(replicas)
+
+def get_node_key_formatter(id: int):
+
+    return 'node_id' + ' ' + str(id)
