@@ -9,11 +9,11 @@ from collections import defaultdict
 
 class Pacemaker:
 
-    def __init__(self, safety: Safety, block_tree: BlockTree, byzantine_nodes: int):
+    def __init__(self, safety: Safety, block_tree: BlockTree, byzantine_nodes: int, timer_constant: int = 4):
         self.current_round = 1
         self.last_round_tc = None
         self.pending_timeouts = defaultdict(Pacemaker.default_function)
-        self.timer_constant = 4
+        self.timer_constant = timer_constant
         self.current_time = round(time.time() * 1000)
         self.safety = safety
         self.block_tree = block_tree

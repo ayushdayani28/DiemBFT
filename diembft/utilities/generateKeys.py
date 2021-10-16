@@ -7,7 +7,7 @@ class GenerateKeys:
         self.private_key = SigningKey.generate()
         self.public_key = self.private_key.verify_key
 
-    def generate_key(self,):
+    def generate_key(self):
         return [self.private_key, self.public_key]
 
 

@@ -109,6 +109,5 @@ class Safety(Logger):
                 self.node_id,
                 self.verifier.sign(str(round) + str(high_qc.round))
             )
-
         return None
 

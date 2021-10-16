@@ -16,14 +16,14 @@ from diembft.messages.timeOutMessage import TimeOutMessage
 
 class Main:
 
-    def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list, mem_pool: MemPoolHelper = MemPoolHelper()):
+    def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list, timer_constant: int, mem_pool: MemPoolHelper = MemPoolHelper()):
         self.node_id = node_id
         self.verifier = Verifier(mapper, keys)
         self.ledger = LedgerImpl(self.node_id)
         self.genesis_qc = Main.generate_genesis_qc()
         self.block_tree = BlockTree(self.node_id, self.ledger, self.genesis_qc)
         self.safety = Safety(self.block_tree, node_id, self.ledger, self.verifier)
-        self.pacemaker = Pacemaker(self.safety, self.block_tree, BYZANTINE_NODES)
+        self.pacemaker = Pacemaker(self.safety, self.block_tree, BYZANTINE_NODES, timer_constant)
         self.leader_election = LeaderElection(nodes, self.pacemaker, self.ledger)
         self.mem_pool = mem_pool
         self.nodes = nodes
@@ -66,6 +66,7 @@ class Main:
             # send vote msg
             next_leader = self.leader_election.get_leader(current_round + 1)
             return [vote_msg, next_leader]
+        return [None,None]
 
     def process_timeout_msg(self, message: TimeOutMessage):
         self.process_certificate_qc(message.tmo_info.high_qc)
