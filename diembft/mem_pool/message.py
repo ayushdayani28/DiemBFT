@@ -1,9 +1,8 @@
 class Message:
 
-    def __init__(self, client_id, transactions, signature, request_id):
-        self.client_id = client_id
+    def __init__(self, transactions, signature, client_request):
         self.transactions = transactions
         self.signature = signature
-        self.request_id = request_id
+        self.client_request= client_request
 
 

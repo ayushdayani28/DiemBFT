@@ -6,7 +6,7 @@ from diembft.utilities.constants import BYZANTINE_NODES
 from diembft.utilities.verifier import Verifier
 from diembft.block_tree.blockId import BlockId
 from diembft.utilities.constants import GENESIS
-
+from diembft.mem_pool.message import Message
 
 class BlockTree:
     def __init__(self, node_id, ledger: LedgerImpl, genesis_qc: QC):
@@ -17,14 +17,14 @@ class BlockTree:
         self.node_id = node_id
         self.ledger = ledger
 
-    def generate_block(self, transactions, current_round):
+    def generate_block(self, message: Message, current_round):
 
         # Create a BlockId object and hash it.
-        block_id = BlockId(self.node_id, current_round, transactions, self.high_qc)
+        block_id = BlockId(self.node_id, current_round, message.transactions, self.high_qc, message.client_request)
 
         hash_id = Verifier.encode(str(block_id))
 
-        return Block(self.node_id, current_round, transactions, self.high_qc, hash_id)
+        return Block(self.node_id, current_round, message.transactions, self.high_qc, hash_id, message.client_request)
 
     def execute_and_insert(self, b: Block):
 

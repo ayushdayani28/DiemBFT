@@ -1,5 +1,4 @@
 from _typeshed import Self
-import imp
 from diembft.mem_pool.memPoolHelper import MemPoolHelper
 from diembft import main as Main, messages
 from diembft.messages import voteMsg
@@ -32,10 +31,10 @@ class Replica(process):
     def localTimeout():
         pass
 
-    def recieve(msg=('client_message', client_message), from= _client_node):
+    def receive(msg=('client_message', client_message), from_=client_node):
         self.mem_pool.put_message(client_message)
 
-    def receive(msg=('message',message), from = _node):
+    def receive(msg=('message',message), from_=node):
         if type(message) == ProposalMsg:
             vote_msg,leader = self.main.process_proposal_msg(message)
             send(('message',vote_msg), to=leader)

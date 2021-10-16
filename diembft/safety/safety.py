@@ -87,7 +87,8 @@ class Safety(Logger):
             )
             ledger_commit_info = LedgerCommitInfo(
                 self.commit_state_id(b.round, b.qc),
-                Verifier.encode(str(vote_info))
+                Verifier.encode(str(vote_info)),
+                b.client_request
             )
             return VoteMsg(
                 vote_info,

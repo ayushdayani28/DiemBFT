@@ -1,0 +1,16 @@
+from diembft.mem_pool.message import Message
+
+class Client(process):
+    def setup():
+        pass
+
+    def run():
+        pass
+    
+    def create_request() -> Message:
+        pass
+
+
+def main():
+    pass
+
