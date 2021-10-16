@@ -14,7 +14,6 @@ from diembft.mem_pool.memPoolHelper import MemPoolHelper
 from diembft.messages.timeOutMessage import TimeOutMessage
 
 
-
 class Main:
 
     def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list, mem_pool: MemPoolHelper = MemPoolHelper()):

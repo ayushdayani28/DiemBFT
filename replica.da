@@ -1,0 +1,33 @@
+import imp
+from diembft.mem_pool.memPoolHelper import MemPoolHelper
+from diembft import main as Main
+from diembft.utilities.generateKeys import GenerateKeys
+
+
+class Replica(process):
+
+    def setup(nodes: set, node_id: str, mapper:dict, keys: list):
+
+        self.mapper = mapper
+        self.nodes = nodes  
+        self.node_id = node_id
+        self.mem_pool = MemPoolHelper()
+        self.main = Main(
+            self.mapper,
+            self.nodes,
+            self.node_id,
+            keys,
+            self.mem_pool
+        )
+
+    
+    def run():
+        pass
+
+    def receive(msg, from = _node):
+        pass
+
+
+def main():
+
+    
