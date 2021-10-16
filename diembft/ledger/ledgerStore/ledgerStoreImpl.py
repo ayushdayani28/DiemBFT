@@ -16,7 +16,11 @@ class LedgerStoreImpl(LedgerStore):
         # identifier = block_id
         # parent = prev_block_id
         # data = Block
-        return self.tree.create_node(identifier=block_id, tag=exec_state_id, parent=prev_block_id, data=block)
+        something = self.tree.create_node(identifier=block_id, tag=exec_state_id, parent=prev_block_id, data=block)
+
+        self.show()
+
+        return something
 
     def delete(self, block_id):
         return self.tree.remove_node(block_id)

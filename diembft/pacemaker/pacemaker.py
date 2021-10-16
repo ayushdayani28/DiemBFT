@@ -9,7 +9,7 @@ from collections import defaultdict
 
 class Pacemaker:
 
-    def __init__(self, safety: Safety, block_tree: BlockTree, byzentine_nodes: int):
+    def __init__(self, safety: Safety, block_tree: BlockTree, byzantine_nodes: int):
         self.current_round = 0
         self.last_round_tc = TimeOutCertificate()
         self.pending_timeouts = defaultdict(Pacemaker.default_function)
@@ -17,7 +17,7 @@ class Pacemaker:
         self.current_time = round(time.time() * 1000)
         self.safety = safety
         self.block_tree = block_tree
-        self.f = byzentine_nodes
+        self.f = byzantine_nodes
         self.current_time = round(time.time() * 1000)
 
     @staticmethod

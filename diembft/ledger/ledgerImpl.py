@@ -17,7 +17,7 @@ class LedgerImpl(Ledger):
         prev_state_id = self.pending_state(prev_block_id)
         # Generate the hash for prev_state_id || transactions to cover the history of the ledger
         exec_state_id = Verifier.encode(str(StateId(prev_state_id, block.payload)))
-        self.log_info('Adding node with block_id: ' + str(block_id) + ',exec_state_id: ' + str(exec_state_id) + ' to ' + 'parent: ' + str(prev_block_id))
+        # self.log_info('Adding node with block_id: ' + str(block_id) + ',exec_state_id: ' + str(exec_state_id) + ' to ' + 'parent: ' + str(prev_block_id))
         return self.ledger_store.add(block_id=block_id, exec_state_id=exec_state_id, prev_block_id=prev_block_id,
                                      block=block).tag
 
@@ -26,7 +26,8 @@ class LedgerImpl(Ledger):
         try:
             return self.ledger_store.find(block_id).tag
         except AttributeError:
-            self.log_info("No pending state found in the tree")
+            # self.log_info("No pending state found in the tree")
+            print('')
         return None
 
     # Exports the branch to persistent layer
@@ -42,7 +43,7 @@ class LedgerImpl(Ledger):
     def write_ledger_to_file(self, block_id):
         node = self.ledger_store.find(block_id)
         self.file.write_file(str(block_id) + " ")
-        self.file.write_file(str(node.data) + "\n")
+        self.file.write_file(str(node.data.payload) + "\n")
 
 # if __name__ == "__main__":
 #     a = LedgerStoreImpl()
