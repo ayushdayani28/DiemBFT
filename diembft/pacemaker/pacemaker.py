@@ -10,8 +10,8 @@ from collections import defaultdict
 class Pacemaker:
 
     def __init__(self, safety: Safety, block_tree: BlockTree, byzantine_nodes: int):
-        self.current_round = 0
-        self.last_round_tc = TimeOutCertificate()
+        self.current_round = 1
+        self.last_round_tc = None
         self.pending_timeouts = defaultdict(Pacemaker.default_function)
         self.timer_constant = 4
         self.current_time = round(time.time() * 1000)
@@ -75,6 +75,15 @@ class Pacemaker:
             return False
         self.last_round_tc = None
         # start Timer
+        self.current_round = qc.vote_info.round
+        return True
+
+    def advance_round_tc(self, tc: TimeOutCertificate):
+        if tc is None or tc.round < self.current_round:
+            return False
+        self.last_round_tc = tc
+        self.current_round = tc.round
+        # start timer
         return True
 
 

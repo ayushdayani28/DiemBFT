@@ -5,6 +5,7 @@ from diembft.messages.voteMsg import VoteMsg
 from diembft.utilities.constants import BYZANTINE_NODES
 from diembft.utilities.verifier import Verifier
 from diembft.block_tree.blockId import BlockId
+from diembft.utilities.constants import GENESIS
 
 
 class BlockTree:
@@ -40,12 +41,11 @@ class BlockTree:
         if vote_idx in self.pending_votes.keys():
             self.pending_votes[vote_idx].append(v.signature)
         else:
-            self.pending_votes[vote_idx] = list(v.signature)
+            self.pending_votes[vote_idx] = [v.signature]
 
         if len(self.pending_votes[vote_idx]) == 2 * BYZANTINE_NODES + 1:
             # Create a QC
-            qc = QC(vote_info=v.vote_info, ledger_commit_info=v.ledger_commit_info,
-                    signatures=self.pending_votes[vote_idx], round=v.vote_info.round)
+            qc = QC(v.vote_info,v.ledger_commit_info, v.vote_info.round, self.pending_votes[vote_idx])
 
             return qc
 
@@ -53,7 +53,7 @@ class BlockTree:
 
     def process_qc(self, qc: QC):
 
-        if qc.ledger_commit_info.commit_state_id is not None:
+        if qc.ledger_commit_info and qc.ledger_commit_info.commit_state_id is not None and qc.vote_info.parent_id != GENESIS:
             self.ledger.commit(qc.vote_info.parent_id)
 
             self.pending_block_tree.remove(qc.vote_info.parent_id)

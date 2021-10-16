@@ -30,6 +30,9 @@ class LedgerStoreImpl(LedgerStore):
 
     def prune(self, block_id):
 
+        if block_id == GENESIS:
+            return
+
         node = self.tree.get_node(block_id)
 
         parent_node_id = node.predecessor(self.tree.identifier)

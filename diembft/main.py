@@ -1,136 +1,118 @@
 from diembft.block_tree.blockTree import BlockTree
 from diembft.ledger.ledgerImpl import LedgerImpl
-from diembft.block_tree.block import Block
 from diembft.certificates.qc import QC
 from diembft.block_tree.voteinfo import VoteInfo
-from diembft.block_tree.ledgerCommitInfo import LedgerCommitInfo
+from diembft.utilities.constants import GENESIS, BYZANTINE_NODES, GENESIS_PARENT_ROUND, GENESIS_PARENT_ID
+from diembft.safety.safety import Safety
 from diembft.utilities.verifier import Verifier
-from diembft.block_tree.blockId import BlockId
+from diembft.pacemaker.pacemaker import Pacemaker
+from diembft.messages.proposalMsg import ProposalMsg
+from diembft.leader_election.leaderElection import LeaderElection
+from diembft.utilities.generateKeys import GenerateKeys
 from diembft.messages.voteMsg import VoteMsg
 
+
+class Main:
+
+    def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list):
+        self.node_id = node_id
+        self.verifier = Verifier(mapper, keys)
+        self.ledger = LedgerImpl(self.node_id)
+        self.genesis_qc = Main.generate_genesis_qc()
+        self.block_tree = BlockTree(self.node_id, self.ledger, self.genesis_qc)
+        self.safety = Safety(self.block_tree, node_id, self.ledger, self.verifier)
+        self.pacemaker = Pacemaker(self.safety, self.block_tree, BYZANTINE_NODES)
+        self.leader_election = LeaderElection(nodes, self.pacemaker, self.ledger)
+
+    @staticmethod
+    def generate_genesis_qc():
+        genesis_vote_info = VoteInfo(
+            GENESIS,
+            0,
+            GENESIS_PARENT_ID,
+            GENESIS_PARENT_ROUND,
+            None
+        )
+        return QC(
+            genesis_vote_info,
+            None,
+            0,
+            []
+        )
+
+    def process_certificate_qc(self, qc: QC):
+
+        self.block_tree.process_qc(qc)
+        self.leader_election.update_leaders(qc)
+        self.pacemaker.advance_round_qc(qc)
+
+    def process_proposal_msg(self, p: ProposalMsg):
+
+        self.process_certificate_qc(p.block.qc)
+        self.process_certificate_qc(p.high_commit_qc)
+        self.pacemaker.advance_round_tc(p.last_round_tc)
+        current_round = self.pacemaker.current_round
+        curr_leader = self.leader_election.get_leader(current_round)
+        if p.block.round != current_round or p.sender != curr_leader or p.block.author != curr_leader:
+            return
+        self.block_tree.execute_and_insert(p.block)
+        vote_msg = self.safety.make_vote(p.block, p.last_round_tc)
+        if vote_msg is not None:
+            # send vote msg
+            next_leader = self.leader_election.get_leader(current_round + 1)
+            return vote_msg
+
+    def process_vote_msg(self, message: VoteMsg):
+        qc = self.block_tree.process_vote(message)
+        if qc is not None:
+            self.process_certificate_qc(qc)
+            print('All is Well ', self.pacemaker.current_round)
+
+
+
 if __name__ == '__main__':
-    ledger = LedgerImpl('1')
-    genesis_vote_info = VoteInfo(
-        '10000',
-        0,
+
+    gn = GenerateKeys()
+    keys = gn.generate_key()
+
+    gn2 = GenerateKeys()
+    keys2 = gn2.generate_key()
+
+    mapper = dict()
+
+    node_1_id = 'node_id_1'
+    node_2_id = 'node_id_2'
+
+    mapper[node_2_id] = keys2[1]
+    mapper[node_1_id] = keys[1]
+
+    nodes = [node_2_id, node_1_id]
+
+    main = Main(
+        mapper,
+        nodes,
+        node_1_id,
+        keys
+    )
+
+    main2 = Main(
+        mapper,
+        nodes,
+        node_2_id,
+        keys2
+    )
+
+    curr_round = main.pacemaker.current_round
+
+    new_block = main2.block_tree.generate_block(['abc'], curr_round)
+    qc = main.genesis_qc
+    p = ProposalMsg(
+        new_block,
         None,
-        None,
-        None
-    )
-    genesis_qc = QC(
-        genesis_vote_info,
-        None,
-        0,
-        []
-    )
-    b = BlockTree('1', ledger, genesis_qc)
-    block_id = BlockId(
-        'author',
-        2,
-        ['add'],
-        genesis_qc  # id = 10000
-    )
-    vote_info = VoteInfo(
-        '10000',
-        1,
-        '10000',
-        0,
-        'abc'
-    )
-    ledger_commit_info = LedgerCommitInfo(
-        '32231',
-        Verifier.encode(str(vote_info))
-    )
-    high_qc = QC(
-        vote_info,
-        ledger_commit_info,
-        1,
-        []
+        qc,
+        'node_id_2'
     )
 
-    block_vote_info = VoteInfo(
-        Verifier.encode(str(block_id)),
-        2,
-        '10000',
-        1,
-        'def'
-    )
-
-    block_qc = QC(
-        block_vote_info,
-        ledger_commit_info,
-        2,
-        []
-    )
-
-    block = Block(
-        'skdsa',
-        2,
-        ['add'],
-        high_qc,
-        Verifier.encode(str(block_id))
-    )
-
-    block1_id = BlockId(
-        'author',
-        3,
-        ['add1'],
-        block_qc  # id = 10000
-    )
-
-    block1 = Block(
-        'skdsa',
-        3,
-        ['add1'],
-        block_qc,
-        Verifier.encode(str(block1_id))
-    )
-    block1_vote_info = VoteInfo(
-        Verifier.encode(str(block1_id)),
-        3,
-        Verifier.encode(str(block_id)),
-        2,
-        'def'
-    )
-    block1_qc = QC(
-        block1_vote_info,
-        ledger_commit_info,
-        3,
-        []
-    )
-
-    block2_id = BlockId(
-        'author',
-        4,
-        ['delete'],
-        block1_qc  # id = 10000
-    )
-
-    block2 = Block(
-        'skdsa',
-        4,
-        ['delete'],
-        block1_qc,
-        Verifier.encode(str(block2_id))
-    )
-
-    b.execute_and_insert(block)
-    b.execute_and_insert(block1)
-    b.execute_and_insert(block2)
-
-    # b.process_qc(block2.qc)
-
-    #b.generate_block(['add'], 1).id
-
-    voteMsg = VoteMsg(
-        vote_info=block1_vote_info,
-        ledger_commit_info=ledger_commit_info,
-        high_commit_qc=block_qc,
-        sender='sender',
-        signature=[]
-    )
-
-    b.process_vote(voteMsg)
-
-
+    vote_msg = main.process_proposal_msg(p)
+    main2.process_vote_msg(vote_msg)
 

@@ -42,6 +42,8 @@ class LedgerImpl(Ledger):
 
     def write_ledger_to_file(self, block_id):
         node = self.ledger_store.find(block_id)
+        if not node or not node.data:
+            return
         self.file.write_file(str(block_id) + " ")
         self.file.write_file(str(node.data.payload) + "\n")
 

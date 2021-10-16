@@ -9,9 +9,8 @@ hasher = nacl.hash.sha256
 
 class Verifier:
 
-    def __init__(self, mapper: dict):
-        self.generate_keys = GenerateKeys()
-        self.public_keys_map = dict()
+    def __init__(self, mapper: dict, keys: list):
+        self.keys = keys
         self.mapper = PublicKeyNodeMapper(mapper)
 
     @staticmethod
@@ -27,9 +26,9 @@ class Verifier:
             raise UnicodeDecodeError or AttributeError
 
     def sign(self, message):
-        private_key, public_key = self.generate_keys.generate_key()
+        private_key, public_key = self.keys
         message = bytes(message, 'utf-16')
-        return private_key.sign(message)
+        return (private_key.sign(message, encoder=nacl.encoding.HexEncoder)).decode('utf-16')
 
     def verify(self, node_id, message):
         if not node_id or not message:

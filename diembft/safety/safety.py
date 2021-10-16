@@ -15,13 +15,13 @@ from diembft.logger.logger import Logger
 
 class Safety(Logger):
 
-    def __init__(self, block_tree: BlockTree, node_id, mapper: dict):
+    def __init__(self, block_tree: BlockTree, node_id, ledger: LedgerImpl, verifier: Verifier):
         self.private_key = ''
         self.public_keys = []
         self.highest_vote_round = 0
         self.highest_qc_round = 0
-        self.ledger = LedgerImpl()
-        self.verifier = Verifier(mapper)
+        self.ledger = ledger
+        self.verifier = verifier
         self.block_tree = block_tree
         self.node_id = node_id
 
@@ -51,7 +51,7 @@ class Safety(Logger):
 
     def commit_state_id(self, block_round, qc: QC):
         if Safety.check_consecutive(block_round, qc.vote_info.round):
-            return self.ledger.pending_state(qc.id)
+            return self.ledger.pending_state(qc.vote_info.id)
         return None
 
     def valid_signatures(self, b: Block, tc: TimeOutCertificate):
@@ -60,6 +60,9 @@ class Safety(Logger):
             if not self.verifier.verify(node_id, message):
                 self.log_debug('QC verification failed : for node_id: '+node_id+' and message: '+message)
                 return False
+
+        if not tc:
+            return True
 
         for node_id, message in tc.tmo_signatures:
             if not self.verifier.verify(node_id, message):
