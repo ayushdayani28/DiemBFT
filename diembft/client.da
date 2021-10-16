@@ -3,13 +3,13 @@ from diembft.block_tree.client_request import ClientRequest
 from diembft.messages.voteMsg import VoteMsg
 
 class Client(process):
-    def setup(node_id:str, replica_nodes:set, signature:list):
+    def setup(node_id:str, replica_nodes:set, signature:list = None):
         self.node_id = node_id
         self.replica_nodes = replica_nodes
 
     def run():
         message = create_requests()
-        send(('client_message', message), to=self.replica_nodes)
+        #send(('client_message', message), to=self.replica_nodes)
 
 
     def create_request():
@@ -26,9 +26,4 @@ class Client(process):
     def receive(msg=('response_message', vote_msg), from_=replica_leader_node):
         output(vote_msg.ledger_commit_info.client_request.client_id)
 
-
-def main():
-    node = new(Client, num=1)
-    setup(node)
-    start
 
