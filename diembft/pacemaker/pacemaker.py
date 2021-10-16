@@ -38,7 +38,7 @@ class Pacemaker:
 
     def local_timeout_round(self):
         timeout_info = self.safety.make_timeout(self.current_round, self.block_tree.high_qc, self.last_round_tc)
-        # TODO: Broadcast this
+        # TODO: Broadcast this : send it to da file and da file will send it to every node
         return TimeOutMessage(
             timeout_info,
             self.last_round_tc,
@@ -63,26 +63,26 @@ class Pacemaker:
             )
         return None
 
-    def advance_round(self, tc: TimeOutCertificate):
-        if tc is None or tc.round < self.current_round:
-            return False
-        self.last_round_tc = tc
-        # start timer
-        return True
-
+    # def advance_round(self, tc: TimeOutCertificate):
+    #     if tc is None or tc.round < self.current_round:
+    #         return False
+    #     self.last_round_tc = tc
+    #     # start timer
+    #     return True
+    #
     def advance_round_qc(self, qc: QC):
         if qc.vote_info.round < self.current_round:
             return False
         self.last_round_tc = None
         # start Timer
-        self.current_round = qc.vote_info.round
+        self.current_round = qc.vote_info.round + 1
         return True
 
     def advance_round_tc(self, tc: TimeOutCertificate):
         if tc is None or tc.round < self.current_round:
             return False
         self.last_round_tc = tc
-        self.current_round = tc.round
+        self.current_round = tc.round + 1
         # start timer
         return True
 
