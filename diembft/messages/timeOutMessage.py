@@ -10,3 +10,6 @@ class TimeOutMessage:
         self.last_round_tc = last_round_tc
         self.high_commit_qc = high_commit_qc
 
+    def __repr__(self):
+        return str(self.tmo_info) + str(self.last_round_tc) + str(self.high_commit_qc)
+

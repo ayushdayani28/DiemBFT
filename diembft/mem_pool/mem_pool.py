@@ -1,5 +1,5 @@
 from diembft.utilities.nop import Nop
-from message import Message
+from diembft.mem_pool.message import Message
 
 """
 MemPool class takes care of two things:

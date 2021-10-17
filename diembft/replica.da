@@ -1,11 +1,5 @@
-from platform import node
-from socket import timeout
-import sys
-from _typeshed import Self
-from threading import Timer
-from time import time
 from diembft.mem_pool.memPoolHelper import MemPoolHelper
-from diembft import main as Main, messages
+import diembft.main as Main
 from diembft.messages import voteMsg
 from diembft.pacemaker.pacemaker import Pacemaker
 from diembft.utilities.generateKeys import GenerateKeys
@@ -17,11 +11,12 @@ from diembft.messages.voteMsg import VoteMsg
 class Replica(process):
 
     def setup(nodes: set, node_id: str, mapper:dict, keys: list, config, nodes_mapper: dict()):
-
+        
+        self.mem_pool = MemPoolHelper()
         self.mapper = mapper
         self.nodes = nodes  
         self.node_id = node_id
-        self.mem_pool = MemPoolHelper()
+        output('Starting replica here ', node_id)
         self.main = Main(
             self.mapper,
             self.nodes,
@@ -86,7 +81,7 @@ class Replica(process):
 
             if not proposal_msg:
 
-                send(msg=('message',proposal_msg), to=nodes)
+                send(('message',proposal_msg), to=nodes)
 
         elif type(message) == TimeOutMessage:
 
@@ -94,4 +89,9 @@ class Replica(process):
 
             if(not proposal_msg):
                 
-                send(msg=('message',proposal_msg), to=nodes)
+                send(('message',proposal_msg), to=nodes)
+
+
+def main():
+
+    output('I am Main')

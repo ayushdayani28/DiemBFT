@@ -5,6 +5,7 @@ from diembft.messages.timeOutMessage import TimeOutMessage
 import time
 from diembft.certificates.qc import QC
 from collections import defaultdict
+from diembft.pacemaker.timeoutInfo import TimeOutInfo
 
 
 class Pacemaker:
@@ -24,7 +25,6 @@ class Pacemaker:
     def default_function():
         return set()
 
-    @staticmethod
     def get_round_timer(self):
         return 4 * self.timer_constant
 
@@ -45,13 +45,21 @@ class Pacemaker:
             self.block_tree.high_commit_qc
         )
 
+    @staticmethod
+    def find_sender_in_list(tmo_list: list, sender: str):
+
+        for t in list(tmo_list):
+            if t.sender == sender:
+                return True
+
+        return False
+
     def process_remote_timeout(self, tmo: TimeOutMessage):
         tmo_info = tmo.tmo_info
-
         if tmo_info.round < self.current_round:
             return None
-        if tmo_info.sender not in self.pending_timeouts[tmo_info.round]:
-            self.pending_timeouts[tmo_info.round].add(tmo_info.sender)
+        if tmo_info.sender and not Pacemaker.find_sender_in_list(self.pending_timeouts[tmo_info.round], tmo_info.sender):
+            self.pending_timeouts[tmo_info.round].add(tmo_info)
         if len(self.pending_timeouts[tmo_info.round]) == self.f + 1:
             # stop timer
             return self.local_timeout_round()
@@ -59,7 +67,7 @@ class Pacemaker:
             return TimeOutCertificate(
                 tmo_info.round,
                 [t for t in self.pending_timeouts[tmo_info.round]],
-                [t.signatuure for t in self.pending_timeouts[tmo_info.round]]
+                [t.signature for t in self.pending_timeouts[tmo_info.round]]
             )
         return None
 

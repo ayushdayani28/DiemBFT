@@ -1,23 +1,141 @@
-from diembft.client import Client
-from diembft.replica import Replica
-from platform import node
-from socket import timeout
+
+from doctest import OutputChecker
+from email import message
 import sys
-from _typeshed import Self
-from threading import Timer
-from time import time
+
+#repolica dependencies
 from diembft.mem_pool.memPoolHelper import MemPoolHelper
-from diembft import main as Main, messages
+from diembft.application.application import Application
 from diembft.messages import voteMsg
 from diembft.pacemaker.pacemaker import Pacemaker
 from diembft.utilities.generateKeys import GenerateKeys
 from diembft.messages.proposalMsg import ProposalMsg
 from diembft.messages.timeOutMessage import TimeOutMessage
 from diembft.messages.voteMsg import VoteMsg
+from diembft.mem_pool.message import Message
+
+#client dependencies
+from diembft.block_tree.client_request import ClientRequest
+
+class Client(process):
+    def setup(node_id:str, replica_nodes:set, signature:str):
+        self.node_id = node_id
+        self.replica_nodes = replica_nodes
+
+    def run():
+        message = self.create_requests()
+        
+        send(('client_message', message), to=self.replica_nodes)
+
+
+    def create_requests():
+        client_request  = ClientRequest(
+            self.node_id,
+            "66527576-2ec6-11ec-8d3d-0242ac130003"
+        )
+        return Message(
+            ["Add"],
+            'signature',
+            client_request
+        )
+
+    def receive(msg=('response_message', vote_msg), from_=replica_leader_node):
+        output(vote_msg.ledger_commit_info.client_request.client_id)
+
+
+class Replica(process):
+
+    def setup(nodes: set, node_id: str, mapper:dict, keys: list, nodes_mapper: dict()):
+
+        self.mapper = mapper
+        self.nodes = nodes  
+        self.node_id = node_id
+        self.mem_pool = MemPoolHelper()
+        self.main = Application(
+            self.mapper,
+            list(nodes_mapper.keys()),
+            self.node_id,
+            keys,
+            # TODO: Take it from client later
+            1,
+            self.mem_pool
+        )
+        self.round_done = False
+        self.nodes_mapper = nodes_mapper
+
+    
+    def run():
+        
+        local_timeout()
+
+    
+    def local_timeout():
+        
+        run_done = False
+
+        while not run_done:
+
+            self.round_done = False
+
+            timer_duration = self.main.pacemaker.get_round_timer() 
+
+            if await(self.round_done):
+                pass
+            
+            elif timeout(timer_duration):
+                timeout_msg = self.main.pacemaker.local_timeout_round()
+                # broadcast to all the nodes
+                send(('message', timeout_msg), to = nodes)
+
+
+    def receive(msg=('client_message', client_message), from_=client_node):
+        #TODO: Encrypt and decrypt messages
+        self.mem_pool.put_message(client_message)
+
+    def receive(msg=('message',message), from_=node):
+        
+        output(type(message))
+
+        if type(message) == ProposalMsg:
+
+            vote_msg,leader = self.main.process_proposal_msg(message)
+
+            if vote_msg is not None:
+
+                #set round_done as True
+                self.round_done = True
+
+                # send vote_msg to next leader
+                leader = self.nodes_mapper[leader]
+                send(('message',vote_msg), to=leader)
+                # send response back to client
+                client = self.nodes_mapper[vote_msg.ledger_commit_info.client_request.client_id]
+                send(('response_message', vote_msg), to=client)
+
+        elif type(message) == VoteMsg:
+            
+            proposal_msg = self.main.process_vote_message(message)
+
+            if proposal_msg is not None:
+
+                send(('message',proposal_msg), to=nodes)
+
+        elif type(message) == TimeOutMessage:
+            
+            proposal_msg = self.main.process_timeout_msg(message) 
+            
+            if proposal_msg is not None:
+                
+                output(' Proposal message received ', proposal_msg)
+                
+                send(('message',proposal_msg), to=nodes)
+
 
 def main():
 
-    nodes_count = int(sys.argv[1]) if len(sys.argv) > 1 else 3
+    output('Main Here starting')
+
+    nodes_count = int(sys.argv[1]) if len(sys.argv) > 1 else 4
     client_count = int(sys.argv[2]) if len(sys.argv) > 1 else 1
 
     config(channel='fifo', clock = "lamport")
@@ -53,7 +171,7 @@ def main():
         setup(r, (replicas - {r}, node_id, node_to_public_key_mapper, node_to_key_mapper[node_id], nodes_mapper))
 
     start(replicas)
-    start(clients)
+    # start(clients)
 
 def get_client_identifier(id: int):
     return 'client_id_' + str(id)

@@ -1,0 +1,4 @@
+20:49:55,334 diembft.logger.logger INFO ['node_id_1', 'Signatures are valid']
+20:49:55,335 diembft.logger.logger INFO ['node_id_1', 'Signatures are valid']
+20:50:05,665 diembft.logger.logger INFO ['node_id_1', 'Signatures are valid']
+20:50:07,34 diembft.logger.logger INFO ['node_id_1', 'Signatures are valid']

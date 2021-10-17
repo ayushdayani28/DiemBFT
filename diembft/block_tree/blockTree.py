@@ -45,7 +45,12 @@ class BlockTree:
 
         if len(self.pending_votes[vote_idx]) == 2 * BYZANTINE_NODES + 1:
             # Create a QC
-            qc = QC(v.vote_info,v.ledger_commit_info, v.vote_info.round, self.pending_votes[vote_idx])
+            qc = QC(
+                v.vote_info,
+                v.ledger_commit_info,
+                v.vote_info.round,
+                self.pending_votes[vote_idx]
+            )
 
             return qc
 
@@ -53,7 +58,7 @@ class BlockTree:
 
     def process_qc(self, qc: QC):
 
-        if qc.ledger_commit_info and qc.ledger_commit_info.commit_state_id is not None and qc.vote_info.parent_id != GENESIS:
+        if qc is not None and qc.ledger_commit_info and qc.ledger_commit_info.commit_state_id is not None and qc.vote_info.parent_id != GENESIS:
             self.ledger.commit(qc.vote_info.parent_id)
 
             self.pending_block_tree.remove(qc.vote_info.parent_id)

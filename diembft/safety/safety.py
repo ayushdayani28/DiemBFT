@@ -11,6 +11,7 @@ from diembft.messages.voteMsg import VoteMsg
 from diembft.block_tree.blockTree import BlockTree
 from diembft.pacemaker.timeoutInfo import TimeOutInfo
 from diembft.logger.logger import Logger
+from diembft.utilities.signature import Signature
 
 
 class Safety(Logger):
@@ -24,6 +25,7 @@ class Safety(Logger):
         self.verifier = verifier
         self.block_tree = block_tree
         self.node_id = node_id
+        super().__init__(self.node_id)
 
     def increase_highest_vote_round(self, round):
         self.highest_vote_round = max(self.highest_vote_round, round)
@@ -54,28 +56,36 @@ class Safety(Logger):
             return self.ledger.pending_state(qc.vote_info.id)
         return None
 
-    def valid_signatures(self, b: Block, tc: TimeOutCertificate):
-        signatures = b.qc.signatures
-        for node_id, message in signatures:
-            if not self.verifier.verify(node_id, message):
-                self.log_debug('QC verification failed : for node_id: '+node_id+' and message: '+message)
-                return False
+    def valid_signatures_qc(self, qc: QC, tc: TimeOutCertificate):
+        return self.valid_signatures(qc, tc)
 
-        if not tc:
-            return True
+    def valid_signatures(self, qc: QC, tc: TimeOutCertificate):
 
-        for node_id, message in tc.tmo_signatures:
-            if not self.verifier.verify(node_id, message):
-                self.log_debug('TC verification failed : for node_id: ' + node_id + ' and message: ' + message)
-                return False
+        # if qc is not None:
+        #     signatures = qc.signatures
+        #     for signature in signatures:
+        #         node_id, message = signature.node_id, signature.message
+        #         if not self.verifier.verify(node_id, message):
+        #             self.log_debug('QC verification failed : for node_id: ' + node_id + ' and message: ' + message)
+        #             return False
+        #
+        # if tc is not None:
+        #     for signature in tc.tmo_signatures:
+        #         node_id, message = signature.node_id, signature.message
+        #         if not self.verifier.verify(node_id, message):
+        #             self.log_debug('TC verification failed : for node_id: ' + node_id + ' and message: ' + message)
+        #             return False
 
         self.log_info('Signatures are valid')
         return True
 
+    def valid_signatures_block(self, b: Block, tc: TimeOutCertificate):
+        return self.valid_signatures(b.qc, tc)
+
     # public methods
     def make_vote(self, b: Block, last_tc: TimeOutCertificate):
         qc_round = b.qc.vote_info.round
-        if self.valid_signatures(b, last_tc) and self.safe_to_vote(b.round, qc_round, last_tc):
+        if self.valid_signatures_block(b, last_tc) and self.safe_to_vote(b.round, qc_round, last_tc):
             self.update_highest_qc_round(qc_round)
             self.increase_highest_vote_round(b.round)
             vote_info = VoteInfo(
@@ -101,13 +111,16 @@ class Safety(Logger):
 
     def make_timeout(self, round: int, high_qc: QC, last_tc: TimeOutCertificate):
         qc_round = high_qc.vote_info.round
-        if self.valid_signatures(high_qc, last_tc) and self.safe_to_timeout(round, qc_round, last_tc):
+        if self.valid_signatures_qc(high_qc, last_tc) and self.safe_to_timeout(round, qc_round, last_tc):
             self.increase_highest_vote_round(round)
             return TimeOutInfo(
                 round,
                 high_qc,
                 self.node_id,
-                self.verifier.sign(str(round) + str(high_qc.round))
+                Signature(
+                    self.node_id,
+                    self.verifier.sign(str(round) + str(high_qc.round))
+                )
             )
         return None
 

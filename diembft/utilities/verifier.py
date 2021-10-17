@@ -35,10 +35,11 @@ class Verifier:
             return True
         try:
             public_key = self.mapper.get_node_public_key(node_id)
-            public_key.verify(message)
+            public_key.verify(bytes(message, 'utf-16'))
             return True
         except nacl.exceptions.BadSignatureError as error:
             # TODO: Add Logs
+            print(error)
             return False
 
 

@@ -14,13 +14,13 @@ from diembft.mem_pool.memPoolHelper import MemPoolHelper
 from diembft.messages.timeOutMessage import TimeOutMessage
 
 
-class Main:
+class Application:
 
     def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list, timer_constant: int, mem_pool: MemPoolHelper = MemPoolHelper()):
         self.node_id = node_id
         self.verifier = Verifier(mapper, keys)
         self.ledger = LedgerImpl(self.node_id)
-        self.genesis_qc = Main.generate_genesis_qc()
+        self.genesis_qc = Application.generate_genesis_qc()
         self.block_tree = BlockTree(self.node_id, self.ledger, self.genesis_qc)
         self.safety = Safety(self.block_tree, node_id, self.ledger, self.verifier)
         self.pacemaker = Pacemaker(self.safety, self.block_tree, BYZANTINE_NODES, timer_constant)
@@ -45,10 +45,10 @@ class Main:
         )
 
     def process_certificate_qc(self, qc: QC):
-
-        self.block_tree.process_qc(qc)
-        self.leader_election.update_leaders(qc)
-        self.pacemaker.advance_round_qc(qc)
+        if qc is not None:
+            self.block_tree.process_qc(qc)
+            self.leader_election.update_leaders(qc)
+            self.pacemaker.advance_round_qc(qc)
 
     def process_proposal_msg(self, p: ProposalMsg):
 
@@ -85,6 +85,7 @@ class Main:
 
     def process_new_round_event(self, last_tc):
         curr_leader = self.leader_election.get_leader(self.pacemaker.current_round)
+        print('In Leader Election ', curr_leader, self.node_id)
         if curr_leader == self.node_id:
             block = self.block_tree.generate_block(self.mem_pool.get_message(), self.pacemaker.current_round)
             # TODO: Send it to da file and let da file handle sending to all nodes
@@ -114,31 +115,33 @@ if __name__ == '__main__':
 
     nodes = [node_2_id, node_1_id]
 
-    main = Main(
+    application = Application(
         mapper,
         nodes,
         node_1_id,
-        keys
+        keys,
+        4
     )
+    #
+    # main2 = Application(
+    #     mapper,
+    #     nodes,
+    #     node_2_id,
+    #     keys2,
+    #     4
+    # )
+    #
+    # curr_round = application.pacemaker.current_round
 
-    main2 = Main(
-        mapper,
-        nodes,
-        node_2_id,
-        keys2
-    )
 
-    curr_round = main.pacemaker.current_round
+    # new_block = main2.block_tree.generate_block(['abc'], curr_round)
+    # qc = application.genesis_qc
+    # p = ProposalMsg(
+    #     new_block,
+    #     None,
+    #     qc,
+    #     'node_id_2'
+    # )
 
-    new_block = main2.block_tree.generate_block(['abc'], curr_round)
-    qc = main.genesis_qc
-    p = ProposalMsg(
-        new_block,
-        None,
-        qc,
-        'node_id_2'
-    )
-
-    vote_msg = main.process_proposal_msg(p)
-    main2.process_vote_msg(vote_msg)
-
+    tn = application.pacemaker.local_timeout_round()
+    application.pacemaker.process_remote_timeout(tn)
