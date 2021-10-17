@@ -23,7 +23,7 @@ class MemPool:
 
         # send a No-op with no-op client id and no-op signature
         # whitelist the signature and client_id
-        return Nop(-1, '')
+        return Nop('-1', '')
 
     # Client enques
     def enque(self, message: Message):

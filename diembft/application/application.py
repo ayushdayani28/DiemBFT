@@ -16,17 +16,17 @@ from diembft.messages.timeOutMessage import TimeOutMessage
 
 class Application:
 
-    def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list, timer_constant: int, mem_pool: MemPoolHelper = MemPoolHelper()):
+    def __init__(self, mapper: dict, nodes: list, node_id: str, keys: list, timer_constant: int, mem_pool: MemPoolHelper):
         self.node_id = node_id
+        self.mem_pool = mem_pool
+        self.nodes = nodes
         self.verifier = Verifier(mapper, keys)
         self.ledger = LedgerImpl(self.node_id)
         self.genesis_qc = Application.generate_genesis_qc()
         self.block_tree = BlockTree(self.node_id, self.ledger, self.genesis_qc)
-        self.safety = Safety(self.block_tree, node_id, self.ledger, self.verifier)
+        self.safety = Safety(self.block_tree, self.node_id, self.ledger, self.verifier)
         self.pacemaker = Pacemaker(self.safety, self.block_tree, BYZANTINE_NODES, timer_constant)
         self.leader_election = LeaderElection(nodes, self.pacemaker, self.ledger)
-        self.mem_pool = mem_pool
-        self.nodes = nodes
 
     @staticmethod
     def generate_genesis_qc():
@@ -90,58 +90,59 @@ class Application:
             block = self.block_tree.generate_block(self.mem_pool.get_message(), self.pacemaker.current_round)
             # TODO: Send it to da file and let da file handle sending to all nodes
             return ProposalMsg(
-                block,
-                last_tc,
-                self.block_tree.high_commit_qc
+                block= block,
+                last_tc= last_tc,
+                qc= self.block_tree.high_commit_qc,
+                sender=self.node_id
             )
 
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    gn = GenerateKeys()
-    keys = gn.generate_key()
+#     gn = GenerateKeys()
+#     keys = gn.generate_key()
 
-    gn2 = GenerateKeys()
-    keys2 = gn2.generate_key()
+#     gn2 = GenerateKeys()
+#     keys2 = gn2.generate_key()
 
-    mapper = dict()
+#     mapper = dict()
 
-    node_1_id = 'node_id_1'
-    node_2_id = 'node_id_2'
+#     node_1_id = 'node_id_1'
+#     node_2_id = 'node_id_2'
 
-    mapper[node_2_id] = keys2[1]
-    mapper[node_1_id] = keys[1]
+#     mapper[node_2_id] = keys2[1]
+#     mapper[node_1_id] = keys[1]
 
-    nodes = [node_2_id, node_1_id]
+#     nodes = [node_2_id, node_1_id]
 
-    application = Application(
-        mapper,
-        nodes,
-        node_1_id,
-        keys,
-        4
-    )
-    #
-    # main2 = Application(
-    #     mapper,
-    #     nodes,
-    #     node_2_id,
-    #     keys2,
-    #     4
-    # )
-    #
-    # curr_round = application.pacemaker.current_round
+#     application = Application(
+#         mapper,
+#         nodes,
+#         node_1_id,
+#         keys,
+#         4
+#     )
+#     #
+#     # main2 = Application(
+#     #     mapper,
+#     #     nodes,
+#     #     node_2_id,
+#     #     keys2,
+#     #     4
+#     # )
+#     #
+#     # curr_round = application.pacemaker.current_round
 
 
-    # new_block = main2.block_tree.generate_block(['abc'], curr_round)
-    # qc = application.genesis_qc
-    # p = ProposalMsg(
-    #     new_block,
-    #     None,
-    #     qc,
-    #     'node_id_2'
-    # )
+#     # new_block = main2.block_tree.generate_block(['abc'], curr_round)
+#     # qc = application.genesis_qc
+#     # p = ProposalMsg(
+#     #     new_block,
+#     #     None,
+#     #     qc,
+#     #     'node_id_2'
+#     # )
 
-    tn = application.pacemaker.local_timeout_round()
-    application.pacemaker.process_remote_timeout(tn)
+#     tn = application.pacemaker.local_timeout_round()
+#     application.pacemaker.process_remote_timeout(tn)

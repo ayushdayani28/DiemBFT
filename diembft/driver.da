@@ -17,6 +17,8 @@ from diembft.mem_pool.message import Message
 #client dependencies
 from diembft.block_tree.client_request import ClientRequest
 
+import traceback
+
 class Client(process):
     def setup(node_id:str, replica_nodes:set, signature:str):
         self.node_id = node_id
@@ -26,6 +28,8 @@ class Client(process):
         message = self.create_requests()
         
         send(('client_message', message), to=self.replica_nodes)
+
+        #show have a await statement here
 
 
     def create_requests():
@@ -90,46 +94,52 @@ class Replica(process):
 
     def receive(msg=('client_message', client_message), from_=client_node):
         #TODO: Encrypt and decrypt messages
+        output('Adding message to mempool', client_message)
         self.mem_pool.put_message(client_message)
 
     def receive(msg=('message',message), from_=node):
         
-        output(type(message))
+        try:
 
-        if type(message) == ProposalMsg:
+            output(type(message))
 
-            vote_msg,leader = self.main.process_proposal_msg(message)
+            if type(message) == ProposalMsg:
 
-            if vote_msg is not None:
+                vote_msg,leader = self.main.process_proposal_msg(message)
 
-                #set round_done as True
-                self.round_done = True
+                if vote_msg is not None:
 
-                # send vote_msg to next leader
-                leader = self.nodes_mapper[leader]
-                send(('message',vote_msg), to=leader)
-                # send response back to client
-                client = self.nodes_mapper[vote_msg.ledger_commit_info.client_request.client_id]
-                send(('response_message', vote_msg), to=client)
+                    #set round_done as True
+                    self.round_done = True
 
-        elif type(message) == VoteMsg:
-            
-            proposal_msg = self.main.process_vote_message(message)
+                    # send vote_msg to next leader
+                    leader = self.nodes_mapper[leader]
+                    send(('message',vote_msg), to=leader)
+                    # send response back to client
+                    client = self.nodes_mapper[vote_msg.ledger_commit_info.client_request.client_id]
+                    send(('response_message', vote_msg), to=client)
 
-            if proposal_msg is not None:
-
-                send(('message',proposal_msg), to=nodes)
-
-        elif type(message) == TimeOutMessage:
-            
-            proposal_msg = self.main.process_timeout_msg(message) 
-            
-            if proposal_msg is not None:
+            elif type(message) == VoteMsg:
                 
-                output(' Proposal message received ', proposal_msg)
-                
-                send(('message',proposal_msg), to=nodes)
+                proposal_msg = self.main.process_vote_message(message)
 
+                if proposal_msg is not None:
+
+                    send(('message',proposal_msg), to=nodes)
+
+            elif type(message) == TimeOutMessage:
+                
+                proposal_msg = self.main.process_timeout_msg(message) 
+
+                output('XYZ',proposal_msg.sender)
+
+                if proposal_msg is not None:
+                    
+                    output(' Proposal message received ', proposal_msg)
+                    
+                    send(('message',proposal_msg), to=nodes)
+        except Exception as e:
+            traceback.print_exc()
 
 def main():
 
@@ -170,8 +180,8 @@ def main():
 
         setup(r, (replicas - {r}, node_id, node_to_public_key_mapper, node_to_key_mapper[node_id], nodes_mapper))
 
+    start(clients)
     start(replicas)
-    # start(clients)
 
 def get_client_identifier(id: int):
     return 'client_id_' + str(id)

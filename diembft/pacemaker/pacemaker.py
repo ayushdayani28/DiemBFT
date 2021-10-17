@@ -87,7 +87,7 @@ class Pacemaker:
         return True
 
     def advance_round_tc(self, tc: TimeOutCertificate):
-        if tc is None or tc.round < self.current_round:
+        if tc is None or tc.round is None or tc.round < self.current_round:
             return False
         self.last_round_tc = tc
         self.current_round = tc.round + 1
